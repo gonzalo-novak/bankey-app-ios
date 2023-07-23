@@ -5,13 +5,21 @@
 
 import UIKit
 
+protocol LoginViewControllerDelegate: AnyObject {
+    func didLogin()
+}
+
+protocol LogoutDelegate: AnyObject {
+    func didLogout()
+}
+
 class LoginViewController: UIViewController {
     let titleElement = UILabel()
     let subtitleElement = UILabel()
     let loginView = LoginView()
     let signInButton = UIButton(type: .system)
     let errorMessageLabel = UILabel()
-    
+    weak var delegate: LoginViewControllerDelegate?
     var username: String? { return loginView.usernameTextField.text }
     var password: String? { return loginView.passwordTextField.text }
     
@@ -21,7 +29,13 @@ class LoginViewController: UIViewController {
         style()
         layout()
     }
-
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        signInButton.configuration?.showsActivityIndicator = false
+        loginView.usernameTextField.text = ""
+        loginView.passwordTextField.text = ""
+    }
 }
 
 extension LoginViewController {
@@ -43,13 +57,16 @@ extension LoginViewController {
         titleElement.translatesAutoresizingMaskIntoConstraints = false
         titleElement.text = "Bankey"
         titleElement.textAlignment = .center
-        titleElement.textColor = .systemGray6
+        titleElement.font = UIFont.preferredFont(forTextStyle: .title1)
+        titleElement.adjustsFontForContentSizeCategory = true
         
         subtitleElement.translatesAutoresizingMaskIntoConstraints = false
         subtitleElement.text = "Your Premium source for all things banking!"
         subtitleElement.textAlignment = .center
-        subtitleElement.textColor = .systemGray6
+        subtitleElement.font = UIFont.preferredFont(forTextStyle: .body)
+        titleElement.adjustsFontForContentSizeCategory = true
     }
+    
     private func layout(){
         view.addSubview(titleElement)
         view.addSubview(subtitleElement)
@@ -111,6 +128,7 @@ extension LoginViewController {
         
         if username == "Admin" && password == "Admin" {
             signInButton.configuration?.showsActivityIndicator = true
+            delegate?.didLogin() // Hey everyone is using this method! We finished login
         } else {
             configureView(withMessage: "Incorrect user / password")
         }
